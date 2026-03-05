@@ -1,0 +1,57 @@
+{
+  "name": "@everystate/types",
+  "version": "1.0.1",
+  "description": "Typed dot-path autocomplete for EveryState stores via recursive TypeScript template-literal types",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "bin": {
+    "everystate-types-self-test": "cli.js"
+  },
+  "keywords": [
+    "everystate",
+    "types",
+    "typescript",
+    "dot-path",
+    "autocomplete",
+    "template-literal-types",
+    "path-based",
+    "state-management",
+    "type-safety"
+  ],
+  "author": {
+    "name": "Ajdin Imsirovic",
+    "url": "https://www.linkedin.com/in/ajdin-imsirovic"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ImsirovicAjdin/everystate-types"
+  },
+  "homepage": "https://github.com/ImsirovicAjdin/everystate-types",
+  "peerDependencies": {
+    "@everystate/core": ">=1.0.5"
+  },
+  "scripts": {
+    "test": "node self-test.js",
+    "self-test": "node self-test.js",
+    "test:integration": "node tests/types.test.js",
+    "test:i": "node tests/types.test.js"
+  },
+  "devDependencies": {
+    "@everystate/test": "^1.0.0"
+  },
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "*.md",
+    "cli.js",
+    "tests/"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}
