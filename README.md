@@ -1,4 +1,4 @@
-# @everystate/types v1.0.0
+# @everystate/types v1.0.2
 
 **Typed dot-path autocomplete for EveryState stores via recursive TypeScript template-literal types.**
 

@@ -129,7 +129,7 @@ assert(true, 'destroy did not throw');
 
 // == Summary ==
 
-console.log(`\n@everystate/types v1.0.1 self-test`);
+console.log(`\n@everystate/types v1.0.2 self-test`);
 if (failed > 0) {
   console.error(`\u2717 ${failed} assertion(s) failed, ${passed} passed`);
   process.exit(1);

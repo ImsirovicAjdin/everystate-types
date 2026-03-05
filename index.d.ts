@@ -30,13 +30,14 @@
  *   type S = { ui: { theme: string; toast: { visible: boolean } } }
  *   DotPaths<S> = 'ui' | 'ui.theme' | 'ui.toast' | 'ui.toast.visible'
  */
-export type DotPaths<T, Prefix extends string = ''> =
+export type DotPaths<T, Prefix extends string = '', D extends any[] = []> =
+  D['length'] extends 5 ? never :
   T extends readonly any[] ? never :
   T extends Record<string, any>
     ? { [K in keyof T & string]:
         | `${Prefix}${K}`
         | (T[K] extends readonly any[] ? never :
-           T[K] extends Record<string, any> ? DotPaths<T[K], `${Prefix}${K}.`> : never)
+           T[K] extends Record<string, any> ? DotPaths<T[K], `${Prefix}${K}.`, [...D, any]> : never)
       }[keyof T & string]
     : never;
 
@@ -48,14 +49,15 @@ export type DotPaths<T, Prefix extends string = ''> =
  *   LeafPaths<S> = 'ui.theme' | 'ui.toast.visible'
  *   (excludes 'ui' and 'ui.toast' because those are namespaces)
  */
-export type LeafPaths<T, Prefix extends string = ''> =
+export type LeafPaths<T, Prefix extends string = '', D extends any[] = []> =
+  D['length'] extends 5 ? never :
   T extends readonly any[] ? never :
   T extends Record<string, any>
     ? { [K in keyof T & string]:
         T[K] extends readonly any[]
           ? `${Prefix}${K}`
           : T[K] extends Record<string, any>
-            ? LeafPaths<T[K], `${Prefix}${K}.`>
+            ? LeafPaths<T[K], `${Prefix}${K}.`, [...D, any]>
             : `${Prefix}${K}`
       }[keyof T & string]
     : never;
@@ -79,16 +81,25 @@ export type PathValue<T, P extends string> =
  * Example:
  *   WildcardPaths<S> = 'ui.*' | 'ui.toast.*'
  */
-export type WildcardPaths<T, Prefix extends string = ''> =
+export type WildcardPaths<T, Prefix extends string = '', D extends any[] = []> =
+  D['length'] extends 5 ? never :
   T extends readonly any[] ? never :
   T extends Record<string, any>
     ? { [K in keyof T & string]:
         | (T[K] extends readonly any[] ? never :
            T[K] extends Record<string, any>
-             ? `${Prefix}${K}.*` | WildcardPaths<T[K], `${Prefix}${K}.`>
+             ? `${Prefix}${K}.*` | WildcardPaths<T[K], `${Prefix}${K}.`, [...D, any]>
              : never)
       }[keyof T & string]
     : never;
+
+// ─── Resolve helper ─────────────────────────────────────────────
+
+/**
+ * Forces TypeScript to fully evaluate and expand a type.
+ * Without this, hover tooltips show "PathValue<...>" instead of "string".
+ */
+type Resolve<T> = T extends infer U ? U : never;
 
 // ─── Typed store interface ──────────────────────────────────────
 
@@ -100,19 +111,15 @@ export type WildcardPaths<T, Prefix extends string = ''> =
  */
 export interface TypedStore<T extends Record<string, any>> {
   /** Get value at a typed dot-path. */
-  get<P extends DotPaths<T>>(path: P): PathValue<T, P>;
+  get<P extends DotPaths<T>>(path: P): Resolve<PathValue<T, P>>;
   /** Get entire state tree. */
-  get(path?: undefined): T;
+  get(): T;
 
   /** Set value at a typed dot-path. */
-  set<P extends DotPaths<T>>(path: P, value: PathValue<T, P>): PathValue<T, P>;
-  /** Set with dynamic path (for computed paths like `query.${name}.status`). */
-  set(path: string, value: any): any;
+  set<P extends DotPaths<T>>(path: P, value: Resolve<PathValue<T, P>>): void;
 
   /** Set multiple paths atomically. */
   setMany(entries: { [P in DotPaths<T>]?: PathValue<T, P> }): void;
-  /** Set multiple paths with dynamic keys. */
-  setMany(entries: Record<string, any>): void;
 
   /** Async set with automatic loading lifecycle (query.path.status/data/error). */
   setAsync(path: string, fetcher: (signal: AbortSignal) => Promise<any>): Promise<any>;
@@ -123,7 +130,7 @@ export interface TypedStore<T extends Record<string, any>> {
   /** Subscribe to a typed path. Callback receives the resolved value. */
   subscribe<P extends DotPaths<T>>(
     path: P,
-    handler: (value: PathValue<T, P>, meta?: { path: string; value: any; oldValue: any }) => void
+    handler: (value: Resolve<PathValue<T, P>>, meta?: { path: string; value: any; oldValue: any }) => void
   ): () => void;
   /** Subscribe to a wildcard or global pattern. */
   subscribe(
